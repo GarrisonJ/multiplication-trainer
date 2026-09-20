@@ -173,7 +173,7 @@ body{
 
   <div id="entrybar">
     <div id="entry">&nbsp;</div>
-    <div id="hint">Type a total, then fire</div>
+    <div id="hint">Type a total to fire</div>
   </div>
 
   <div id="pad"></div>
@@ -353,17 +353,9 @@ function bombAt(sum){
   });
   return found;
 }
-function anyLonger(prefix){
-  for(var i=0;i<bombs.length;i++){
-    var s=String(bombs[i].sum);
-    if(s.length>prefix.length&&s.indexOf(prefix)===0)return true;
-  }
-  return false;
-}
 function autoFire(){
   if(!typed)return;
-  var t=bombAt(parseInt(typed,10));
-  if(t&&!anyLonger(typed))fire();
+  if(bombAt(parseInt(typed,10)))fire();
 }
 
 function fire(){
@@ -498,7 +490,7 @@ function start(){
   bombs=[];
   bases.forEach(function(b){b.alive=true;b.el.className="base"});
   el("score").textContent="0/"+TOTAL;el("wave").textContent="1";
-  el("hint").textContent="Type a total, then fire";
+  el("hint").textContent="Type a total to fire";
   el("quit").style.display="";
   draw();
   loop=setInterval(tick,50);
