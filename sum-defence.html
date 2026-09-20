@@ -339,6 +339,11 @@ function spawn(){
   el("sky").appendChild(d);
   bombs.push({a:a,b:b,sum:a+b,x:x,y:9,el:d,speed:(5.4+wave*0.9)*mult});
   launched++;
+  var w=Math.floor(launched/13)+1;
+  if(w>wave&&launched<TOTAL){
+    wave=w;el("wave").textContent=wave;
+    cheer();el("hint").textContent="Wave "+wave+" — faster now";
+  }
 }
 
 function bombAt(sum){
@@ -411,10 +416,6 @@ function destroy(bo){
   puff(bo.x,bo.y);boomSound();
   score++;
   el("score").textContent=score+"/"+TOTAL;
-  if(launched%13===0&&launched<TOTAL){
-    wave++;el("wave").textContent=wave;
-    cheer();el("hint").textContent="Wave "+wave;
-  }
 }
 
 function impact(bo){
