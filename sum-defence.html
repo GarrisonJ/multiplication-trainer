@@ -103,14 +103,7 @@ body{
 #pad{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
 .key{
   font-family:"Bungee",sans-serif;font-size:clamp(22px,6.4vw,30px);
-  height:clamp(54px,9.5vh,78px);.label{font-size:11px;letter-spacing:.1em;color:var(--dim)}
-#chips{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.chip{
-  font-family:"Bungee",sans-serif;font-size:15px;
-  padding:9px 0;border-radius:9px;border:none;cursor:pointer;
-  background:#242B57;color:#8D97C7;border-bottom:3px solid transparent;
-}
-.chip.on{background:var(--mint);color:#0B2A24;border-bottom-color:#2FA88B}
+  height:clamp(54px,9.5vh,78px);
   background:#EDF0FF;color:#121634;
   border:none;border-bottom:5px solid #B9C0E0;border-radius:12px;cursor:pointer;
   display:grid;place-items:center;
@@ -130,6 +123,13 @@ body{
 #overlay p{font-size:14px;color:#B6BEE6;max-width:34ch}
 .label{font-size:11px;letter-spacing:.1em;color:var(--dim)}
 #speeds{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#chips{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.chip{
+  font-family:"Bungee",sans-serif;font-size:15px;
+  padding:9px 0;border-radius:9px;border:none;cursor:pointer;
+  background:#242B57;color:#8D97C7;border-bottom:3px solid transparent;
+}
+.chip.on{background:var(--mint);color:#0B2A24;border-bottom-color:#2FA88B}
 .spd{
   font-family:"Space Grotesk",sans-serif;font-weight:500;font-size:14px;
   padding:11px 0;border-radius:10px;border:none;cursor:pointer;
@@ -172,7 +172,7 @@ body{
   </div>
 
   <div id="sky">
-    <svg id="stars" aria-hidden="true"></svg> 
+    <svg id="stars" aria-hidden="true"></svg>
     <div id="terrain"></div>
     <svg id="beams" aria-hidden="true"></svg>
     <div id="flash"></div>
@@ -188,14 +188,14 @@ body{
   <div id="overlay">
     <a class="back" href="index.html">
       <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg> All games
-      <div>
-        
-        
-        
-      </div>
     </a>
     <h1>Sum<em>defence</em></h1>
-    <p> Bombs fall with a sum written on each. Type the total to blow it out of the sky. Four bases to protect, and each wave falls faster.</p><div><div class="label">Numbers in the raid</div><div id="chips" style="margin-top:7px"></div><div id="count" style="margin-top:8px;font-size:13px;color:#B6BEE6">78 bombs incoming</div></div>
+    <p>Bombs fall with a sum written on each. Type the total to blow it out of the sky. Four bases to protect, and each wave falls faster.</p>
+    <div>
+      <div class="label">Numbers in the raid</div>
+      <div id="chips" style="margin-top:7px"></div>
+      <div id="count" style="margin-top:8px;font-size:13px;color:#B6BEE6">78 bombs incoming</div>
+    </div>
     <div>
       <div class="label">Starting wave speed</div>
       <div id="speeds" style="margin-top:7px">
@@ -292,14 +292,34 @@ function saveBest(){
   if(!canSave)return;
   try{localStorage.setItem(BKEY,JSON.stringify(bests))}catch(e){canSave=false}
 }
-function setKey(){return levelName()+"|"+nums.slice().sort(function(a,b){return a-b}).join(",");}function levelName(){
+function levelName(){
   return startMult<0.9?"Calm":startMult<1.2?"Normal":"Frantic";
 }
-/* ---------- number picker ---------- */(function(){var wrap=el("chips");[1,2,3,4,5,6,7,8,9,10,11,12].forEach(function(n){var b=document.createElement("button");b.className=nums.indexOf(n)>-1?"chip on":"chip";b.textContent=n;tap(b,function(){var i=nums.indexOf(n);if(i>-1&&nums.length>1){nums.splice(i,1);b.className="chip"}else if(i<0){nums.push(n);b.className="chip on"}showCount();showBest();clack();});wrap.appendChild(b);});})();function showBest(){
+function setKey(){
+  return levelName()+"|"+nums.slice().sort(function(a,b){return a-b}).join(",");
+}
+function showBest(){
   var b=bests[setKey()];
   if(b){el("beststat").style.display="";el("bestval").textContent=b.score}
   else el("beststat").style.display="none";
 }
+
+/* ---------- number picker ---------- */
+(function(){
+  var wrap=el("chips");
+  [1,2,3,4,5,6,7,8,9,10,11,12].forEach(function(n){
+    var b=document.createElement("button");
+    b.className=nums.indexOf(n)>-1?"chip on":"chip";
+    b.textContent=n;
+    tap(b,function(){
+      var i=nums.indexOf(n);
+      if(i>-1&&nums.length>1){nums.splice(i,1);b.className="chip"}
+      else if(i<0){nums.push(n);b.className="chip on"}
+      showCount();showBest();clack();
+    });
+    wrap.appendChild(b);
+  });
+})();
 
 /* ---------- keypad ---------- */
 var keyEls={};
@@ -334,13 +354,26 @@ function draw(){el("entry").textContent=typed||"\u00a0"}
 /* ---------- bombs ---------- */
 function buildDeck(){
   var d=[];
-  for(var a=1;a<=12;a++)for(var b=a;b<=12;b++){if(nums.indexOf(a)>-1||nums.indexOf(b)>-1)d.push([a,b]);}
+  for(var a=1;a<=12;a++)for(var b=a;b<=12;b++){
+    if(nums.indexOf(a)>-1||nums.indexOf(b)>-1)d.push([a,b]);
+  }
   for(var i=d.length-1;i>0;i--){
     var j=Math.floor(Math.random()*(i+1)),t=d[i];d[i]=d[j];d[j]=t;
   }
   return d;
 }
-function deckSize(){var n=0;for(var a=1;a<=12;a++)for(var b=a;b<=12;b++){if(nums.indexOf(a)>-1||nums.indexOf(b)>-1)n++;}return n;}function showCount(){var n=deckSize();el("count").textContent=n+(n===1?" bomb":" bombs")+" incoming";}function spawn(){
+function deckSize(){
+  var n=0;
+  for(var a=1;a<=12;a++)for(var b=a;b<=12;b++){
+    if(nums.indexOf(a)>-1||nums.indexOf(b)>-1)n++;
+  }
+  return n;
+}
+function showCount(){
+  var n=deckSize();
+  el("count").textContent=n+(n===1?" bomb":" bombs")+" incoming";
+}
+function spawn(){
   var pair=deck[launched];
   var a=pair[0],b=pair[1];
   if(Math.random()<0.5){var s=a;a=b;b=s}
