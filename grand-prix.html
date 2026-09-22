@@ -14,7 +14,7 @@
 <link rel="manifest" href="site.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Times table grand prix</title>
+<title>Grand prix</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
@@ -257,10 +257,17 @@ body{
     <a class="back" href="index.html">
       <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg> All games
     </a>
-    <h1>Times table<em>grand prix</em></h1>
-    <p>Every fact in the tables you pick, once each, in a random order. Each right answer moves your car. Beat the grey car to the flag.</p>
+    <h1>Grand<em>prix</em></h1>
+    <p>Times or plus, your choice. Every fact in the numbers you pick, once each, in a random order. Each right answer moves your car. Beat the grey car to the flag.</p>
     <div>
-      <div class="label">Tables in the race</div>
+      <div class="label">Sums to solve</div>
+      <div id="ops" style="margin-top:7px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+        <button class="spd on" data-op="x">Times &times;</button>
+        <button class="spd" data-op="p">Plus +</button>
+      </div>
+    </div>
+    <div>
+      <div class="label">Numbers in the race</div>
       <div id="chips" style="margin-top:7px"></div>
       <div id="count" style="margin-top:8px;font-size:13px;color:#5A6874">66 facts to clear</div>
       <div id="record" style="margin-top:3px;font-size:13px;color:#5A6874"></div>
@@ -286,7 +293,7 @@ body{
 
 <script>
 (function(){
-var LAPS=66,deck=[],deckIdx=0;
+var LAPS=66,deck=[],deckIdx=0,op="x";
 var el=function(id){return document.getElementById(id)};
 var tables=[2,3,4,5,6,7,8,9,10,11,12];
 var active=false,lock=false,lap=0,streak=0,best=0,wrong=0,typed="",cur=null;
@@ -332,8 +339,9 @@ function saveBests(){
   try{localStorage.setItem(BKEY,JSON.stringify(bests))}catch(e){canSave=false}
 }
 function setKey(){
-  return tables.slice().sort(function(a,b){return a-b}).join(",");
+  return op+"|"+tables.slice().sort(function(a,b){return a-b}).join(",");
 }
+function opWord(){return op==="x"?"times":"plus"}
 function fmt(s){
   if(s<60)return s.toFixed(1)+"s";
   var m=Math.floor(s/60);
@@ -345,8 +353,8 @@ function showRecord(){
   var b=bests[setKey()];
   var n=deckSize();
   el("record").textContent=b
-    ? "Your record for these "+n+": "+fmt(b)
-    : "No record yet for this set of tables";
+    ? "Your record for these "+n+" "+opWord()+" facts: "+fmt(b)
+    : "No record yet for this set";
   if(b){
     el("beststat").style.display="";
     el("bestval").textContent=fmt(b);
@@ -369,7 +377,7 @@ function saveMisses(){
 }
 function factKey(a,b){
   var lo=Math.min(a,b),hi=Math.max(a,b);
-  return lo+"x"+hi;
+  return lo+op+hi;
 }
 function recordMiss(a,b){
   var k=factKey(a,b);
@@ -379,10 +387,11 @@ function recordMiss(a,b){
 function renderBoard(){
   var board=el("board"),wipe=el("wipe");
   var list=Object.keys(misses).map(function(k){
-    var p=k.split("x");
-    return {a:+p[0],b:+p[1],n:misses[k]};
-  }).sort(function(x,y){
-    return y.n-x.n || (x.a*x.b)-(y.a*y.b);
+    var m=/^(\d+)([xp])(\d+)$/.exec(k);
+    if(!m)return null;
+    return {a:+m[1],op:m[2],b:+m[3],n:misses[k]};
+  }).filter(Boolean).sort(function(x,y){
+    return y.n-x.n || (x.a*x.b)-(y.a*y.b) || x.a-y.a;
   }).slice(0,8);
 
   board.innerHTML="";
@@ -402,7 +411,7 @@ function renderBoard(){
     var row=document.createElement("div");
     row.className="row"+(f.n===top?" hot":"");
     row.innerHTML='<div class="rank">'+(i+1)+'</div>'+
-      '<div class="fact">'+f.a+' \u00d7 '+f.b+'</div>'+
+      '<div class="fact">'+f.a+(f.op==="x"?' \u00d7 ':' + ')+f.b+'</div>'+
       '<div class="tally">'+f.n+'</div>';
     board.appendChild(row);
   });
@@ -426,10 +435,18 @@ var chips=el("chips");
   chips.appendChild(b);
 });
 
-Array.prototype.forEach.call(document.querySelectorAll(".spd"),function(b){
+Array.prototype.forEach.call(document.querySelectorAll("#speeds .spd"),function(b){
   tap(b,function(){
-    Array.prototype.forEach.call(document.querySelectorAll(".spd"),function(x){x.className="spd"});
+    Array.prototype.forEach.call(document.querySelectorAll("#speeds .spd"),function(x){x.className="spd"});
     b.className="spd on";foeStep=parseInt(b.dataset.ms,10);clack();
+  });
+});
+Array.prototype.forEach.call(document.querySelectorAll("#ops .spd"),function(b){
+  tap(b,function(){
+    if(active)return;
+    Array.prototype.forEach.call(document.querySelectorAll("#ops .spd"),function(x){x.className="spd"});
+    b.className="spd on";op=b.dataset.op;
+    showRecord();renderBoard();clack();
   });
 });
 
@@ -492,8 +509,8 @@ function nextProblem(){
   var pair=deck[deckIdx++];
   var a=pair[0],b=pair[1];
   if(Math.random()<0.5){var s=a;a=b;b=s}
-  cur={a:a,b:b,p:a*b};
-  el("problem").textContent=a+" \u00d7 "+b;
+  cur={a:a,b:b,p:op==="x"?a*b:a+b};
+  el("problem").textContent=a+(op==="x"?" \u00d7 ":" + ")+b;
   typed="";el("entry").textContent="\u00a0";
   qt=performance.now();
 }

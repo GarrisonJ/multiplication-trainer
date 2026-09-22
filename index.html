@@ -13,7 +13,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="manifest" href="site.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Times table arcade</title>
+<title>Mental math ladder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
@@ -75,14 +75,14 @@ footer{font-size:12px;color:#5A6874;margin-top:4px}
 <div id="page">
 
   <header>
-    <h1>Times table<br>arcade</h1>
-    <p>Three ways to practise. Pick one.</p>
+    <h1>Mental math<br>ladder</h1>
+    <p>Three ways to practice. Pick one.</p>
   </header>
 
   <a class="card race" href="grand-prix.html">
-    <div class="tagline">TABLES 1 TO 12</div>
+    <div class="tagline">TIMES OR PLUS, 1 TO 12</div>
     <h2>Grand prix</h2>
-    <p>Every fact in the tables you choose, once each. Beat the rival car to the flag.</p>
+    <p>Times or plus, every fact in the numbers you choose, once each. Beat the rival car to the flag.</p>
     <span class="pill" id="pbRace">No record yet</span>
     <div class="art">
       <svg viewBox="0 0 64 30" width="82" height="38" aria-hidden="true">
@@ -94,9 +94,9 @@ footer{font-size:12px;color:#5A6874;margin-top:4px}
     </div>
   </a>
 
-  <a class="card defend" href="sum-defence.html">
+  <a class="card defend" href="sum-defense.html">
     <div class="tagline">ADDING 1 TO 12</div>
-    <h2>Sum defence</h2>
+    <h2>Sum defense</h2>
     <p>Bombs fall with a sum on each. Type the total to shoot it down before it lands.</p>
     <span class="pill" id="pbDef">No record yet</span>
     <div class="art">
@@ -162,8 +162,11 @@ footer{font-size:12px;color:#5A6874;margin-top:4px}
         var pick=keys.reduce(function(a,b){
           return b.split(",").length>a.split(",").length?b:a;
         });
+        var parts=pick.split("|");
+        var sign=parts.length>1&&parts[0]==="p"?"plus":"times";
+        var nums=(parts.length>1?parts[1]:parts[0]).split(",").length;
         document.getElementById("pbRace").textContent=
-          "Best: "+fmt(bests[pick])+" for "+pick.split(",").length+" tables";
+          "Best: "+fmt(bests[pick])+" for "+nums+" "+sign+" numbers";
         document.getElementById("pbRace").className="pill best";
       }
     }
