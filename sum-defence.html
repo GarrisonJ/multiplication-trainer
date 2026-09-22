@@ -503,7 +503,6 @@ function over(cleared){
   if(score>0&&better){
     record=true;bests[key]={score:score,bases:standing,total:TOTAL};saveBest();
   }
-  var acc=shots?Math.round((shots-misses)/shots*100):0;
   var list=missed.slice(-5);
   var head=cleared&&standing
     ? (score===TOTAL
@@ -515,7 +514,6 @@ function over(cleared){
     (standing?"<br>"+standing+(standing===1?" base":" bases")+" still standing.":"")+
     (record?"<br>That is a new best on "+lvl+"."
            :(prev?"<br>Your best on "+lvl+" is "+prev.score+" of "+(prev.total||TOTAL)+" with "+prev.bases+" bases left.":""))+
-    "<br>Aim accuracy "+acc+"%"+
     (list.length?"<br><br>Ones that got through:<br>"+list.join("<br>"):"");
   el("start").textContent="Defend again";
   el("quit").style.display="none";

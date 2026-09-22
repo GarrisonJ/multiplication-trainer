@@ -147,38 +147,48 @@ footer{font-size:12px;color:#5A6874;margin-top:4px}
   function read(k){
     try{var v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}
   }
-  var bests=read("ttgp.best.v1");
-  if(bests){
-    var keys=Object.keys(bests);
-    if(keys.length){
-      var pick=keys.reduce(function(a,b){
-        return b.split(",").length>a.split(",").length?b:a;
-      });
-      document.getElementById("pbRace").textContent=
-        "Best: "+fmt(bests[pick])+" for "+pick.split(",").length+" tables";
-      document.getElementById("pbRace").className="pill best";
+  function refresh(){
+    var bests=read("ttgp.best.v1");
+    if(bests){
+      var keys=Object.keys(bests);
+      if(keys.length){
+        var pick=keys.reduce(function(a,b){
+          return b.split(",").length>a.split(",").length?b:a;
+        });
+        document.getElementById("pbRace").textContent=
+          "Best: "+fmt(bests[pick])+" for "+pick.split(",").length+" tables";
+        document.getElementById("pbRace").className="pill best";
+      }
+    }
+    var def=read("sumdef.best.v2");
+    if(def){
+      var dl=Object.keys(def);
+      if(dl.length){
+        var top=dl.reduce(function(a,b){return def[b].score>def[a].score?b:a});
+        var e=def[top];
+        document.getElementById("pbDef").textContent=
+          "Best: "+e.score+" of "+(e.total||78)+" on "+top.split("|")[0];
+        document.getElementById("pbDef").className="pill best";
+      }
+    }
+    var rex=read("trex.best.v2");
+    if(rex){
+      var lv=Object.keys(rex);
+      if(lv.length){
+        var fastest=lv.reduce(function(a,b){return rex[b]<rex[a]?b:a});
+        document.getElementById("pbRex").textContent=
+          "Best: "+fmt(rex[fastest])+" on "+fastest;
+        document.getElementById("pbRex").className="pill best";
+      }
     }
   }
-  var def=read("sumdef.best.v1");
-  if(def){
-    var dl=Object.keys(def);
-    if(dl.length){
-      var top=dl.reduce(function(a,b){return def[b].score>def[a].score?b:a});
-      document.getElementById("pbDef").textContent=
-        "Best: "+def[top].score+" shot down on "+top;
-      document.getElementById("pbDef").className="pill best";
-    }
-  }
-  var rex=read("trex.best.v2");
-  if(rex){
-    var lv=Object.keys(rex);
-    if(lv.length){
-      var fastest=lv.reduce(function(a,b){return rex[b]<rex[a]?b:a});
-      document.getElementById("pbRex").textContent=
-        "Best: "+fmt(rex[fastest])+" on "+fastest;
-      document.getElementById("pbRex").className="pill best";
-    }
-  }
+  refresh();
+  // phones often restore this page from memory when you come back,
+  // without re-running scripts, so re-read the scores every time it shows
+  window.addEventListener("pageshow",refresh);
+  document.addEventListener("visibilitychange",function(){
+    if(document.visibilityState==="visible")refresh();
+  });
 })();
 </script>
 </body>
