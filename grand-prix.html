@@ -283,7 +283,7 @@ body{
     <button id="start">Green light</button>
     <div id="report"></div>
     <div id="boardwrap">
-      <div class="label">Facts you miss most</div>
+      <div class="label" id="boardlabel">Facts you miss most</div>
       <div id="board" style="margin-top:7px"></div>
       <button class="bare" id="wipe" style="margin-top:9px">Clear the list</button>
     </div>
@@ -386,11 +386,14 @@ function recordMiss(a,b){
 }
 function renderBoard(){
   var board=el("board"),wipe=el("wipe");
+  el("boardlabel").textContent=(op==="x"?"Times":"Plus")+" facts you miss most";
   var list=Object.keys(misses).map(function(k){
     var m=/^(\d+)([xp])(\d+)$/.exec(k);
     if(!m)return null;
     return {a:+m[1],op:m[2],b:+m[3],n:misses[k]};
-  }).filter(Boolean).sort(function(x,y){
+  }).filter(function(f){
+    return f&&f.op===op;
+  }).sort(function(x,y){
     return y.n-x.n || (x.a*x.b)-(y.a*y.b) || x.a-y.a;
   }).slice(0,8);
 
@@ -399,7 +402,7 @@ function renderBoard(){
     var m=document.createElement("div");
     m.style.cssText="font-size:13px;color:#7A8794";
     m.textContent=canSave
-      ? "Nothing here yet. Facts you get wrong will pile up on this list."
+      ? "No "+opWord()+" facts missed yet. Ones you get wrong will pile up here."
       : "This browser is blocking saved data, so the list resets when you close the tab.";
     board.appendChild(m);
     wipe.style.display="none";
@@ -603,7 +606,11 @@ function finish(done){
 }
 
 tap(el("wipe"),function(){
-  misses={};saveMisses();renderBoard();clack();
+  Object.keys(misses).forEach(function(k){
+    var m=/^(\d+)([xp])(\d+)$/.exec(k);
+    if(m&&m[2]===op)delete misses[k];
+  });
+  saveMisses();renderBoard();clack();
 });
 
 tap(el("quit"),function(){
